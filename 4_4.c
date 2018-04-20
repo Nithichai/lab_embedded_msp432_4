@@ -46,7 +46,7 @@ int main (void) {
         printf("ADC Low byte : %d\r\n",data_2 );
         printf("ADC Last bit : %d\r\n",(data_3 & 0x01) );
         printf("ADC Value: %d\r\n",ADC_data);
-        printf("Voltage: %f\r\n",ADC_data * 3300 / 4096 / 1000); // DOTO HERE
+        printf("Voltage: %f\r\n", ADC_data * 3300.0 / 4096000); // DOTO HERE
         delay_ms (1000);
         P2->OUT ^= 2;                   //toggle green LED
     }

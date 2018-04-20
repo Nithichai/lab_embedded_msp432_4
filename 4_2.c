@@ -46,7 +46,7 @@ int main (void) {
         printf("ADC Low byte : %d\r\n",data_2 );
         printf("ADC Last bit : %d\r\n",(data_3 & 0x01) );
         printf("ADC Value: %d\r\n",ADC_data);
-        printf("Voltage: %f\r\n",ADC_data * 3300 / 4096 / 1000); // DOTO HERE
+        printf("Voltage: %f\r\n",ADC_data * 3300.0 / 4096000); // DOTO HERE
         delay_ms (1000);
         P2->OUT ^= 2;                   //toggle green LED
     }
@@ -85,10 +85,12 @@ unsigned char UART0Rx(void) {
     char c;
     while (!(EUSCI_A0 -> IFG & 0x01));
     c = EUSCI_A0 -> RXBUF;
-    return c;}
-    /////////////////////////////UART0Tx///////////////////////////////////
-    /* write a charater to UART */
-    int UART0Tx (unsigned char c){
+    return c;
+}
+
+/////////////////////////////UART0Tx///////////////////////////////////
+/* write a charater to UART */
+int UART0Tx (unsigned char c){
     while (!(EUSCI_A0 -> IFG & 0x02));
     EUSCI_A0 -> TXBUF = c;
     return c;

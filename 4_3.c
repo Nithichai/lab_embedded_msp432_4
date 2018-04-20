@@ -19,8 +19,8 @@ int main (void) {
 
     EUSCI_B0 -> BRW = 300;          //3MHz/ 300 = 10 kHz
     EUSCI_B0 -> CTLW0 &= ~0x0001;   //enable UCB0 after config
-    P6 -> SEL0 |= 0x3C;             //CHANGE HERE
-    P6 -> SEL1 &= ~0x3C;
+    P1 -> SEL0 |= 0xE0;             // P1.5 is CLK, P1.6 is SIMO, P1.7 is SOMI
+    P1 -> SEL1 &= ~0xE0;
     P2 -> DIR |= 8;                 //P2.3 set as output for slave select ***CS at P2.3
     P2 -> OUT |= 8;                 //slave select idle hight
     ///LED show status (blink)
@@ -34,7 +34,7 @@ int main (void) {
     while (1) {
         P2 -> OUT &= ~8;                //assert slave select
         while (!(EUSCI_B0 ->IFG & 2));  //wait for transmit buffer emty
-        EUSCI_B0 -> TXBUF = 0xD0;       //write command
+        EUSCI_B0 -> TXBUF = 0xF0;       //write command
         while (!(EUSCI_B0 ->IFG & 2));  //wait for transmit buffer emty
         EUSCI_B0 -> TXBUF = 0x00;       //write command
         while (!(EUSCI_B0 ->IFG & 2));  //wait for transmit buffer emty
@@ -46,7 +46,7 @@ int main (void) {
         printf("ADC Low byte : %d\r\n",data_2 );
         printf("ADC Last bit : %d\r\n",(data_3 & 0x01) );
         printf("ADC Value: %d\r\n",ADC_data);
-        printf("Voltage: %f\r\n",ADC_data * 3300 / 4096 / 1000); // DOTO HERE
+        printf("Voltage: %f\r\n",ADC_data * 3300.0 / 4096000); // DOTO HERE
         delay_ms (1000);
         P2->OUT ^= 2;                   //toggle green LED
     }

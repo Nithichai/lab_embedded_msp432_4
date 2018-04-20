@@ -5,6 +5,7 @@ void UART0_init(void);
 unsigned char UART0Rx(void);
 int UART0Tx(unsigned char c);
 void delay_ms (uint32_t delay);
+int get_adc_val(int ch);
 
 int ADC_data=0;
 int count_rx = 0;
@@ -12,31 +13,15 @@ uint8_t data_1 = 0, data_2 = 0, data_3 = 0;
 
 int main (void) {
     UART0_init();
-    // __enable_irq();
-    while (1) {
-        get_adc_val(0);
-        delay_ms (1000);
-        P2->OUT ^= 2;                   //toggle green LED
-    }
-}
-
-void get_adc_val(int ch) {
     EUSCI_B0 -> CTLW0 = 0x0001;     //disable UCB0 during config
     EUSCI_B0 -> CTLW0 = 0x2BC1;     //clock phase/polarity : 00, MSB first, 8bit, master, 4 pin SPI
+
     //sychronous mode,use SMCLK as clocksource
-    EUSCI_B0 -> BRW = 300;          //3MHz / 300 = 10 kHz 
+
+    EUSCI_B0 -> BRW = 300;           //3MHz/ 300 = 10 kHz
     EUSCI_B0 -> CTLW0 &= ~0x0001;   //enable UCB0 after config
-    if (ch == 0) {
-        P1 -> SEL0 |= 0xE0;             
-        P1 -> SEL1 &= ~0xE0;
-        P6 -> SEL0 = 0x00;
-        P6 -> SEL1 = 0x00;
-    } else if (ch == 1) {
-        P1 -> SEL0 = 0x00;
-        P1 -> SEL1 = 0x00;
-        P6 -> SEL0 |= 0x3C;             
-        P6 -> SEL1 &= ~0x3C;
-    }
+    P1 -> SEL0 |= 0xE0;             // P1.5 is CLK, P1.6 is SIMO, P1.7 is SOMI
+    P1 -> SEL1 &= ~0xE0;
     P2 -> DIR |= 8;                 //P2.3 set as output for slave select ***CS at P2.3
     P2 -> OUT |= 8;                 //slave select idle hight
     ///LED show status (blink)
@@ -47,10 +32,21 @@ void get_adc_val(int ch) {
     NVIC_SetPriority(EUSCIB0_IRQn, 4); //set priority to 4 in NVIC
     NVIC_EnableIRQ(EUSCIB0_IRQn);   // enable interrupt in NVIC
     __enable_irq();
+    while (1) {
+        printf("CH 0 ADC VALUE : %d\n", get_adc_val(0));
+        printf("CH 1 ADC VALUE : %d\n", get_adc_val(1));
+        delay_ms (1000);
+        P2->OUT ^= 2;                   //toggle green LED
+    }
+}
 
+int get_adc_val(int ch) {
     P2 -> OUT &= ~8;                //assert slave select
     while (!(EUSCI_B0 ->IFG & 2));  //wait for transmit buffer emty
-    EUSCI_B0 -> TXBUF = 0xD0;       //write command
+    if (ch == 0)
+        EUSCI_B0 -> TXBUF = 0xD0;       //write command
+    else if (ch == 1)
+        EUSCI_B0 -> TXBUF = 0xF0;       //write command
     while (!(EUSCI_B0 ->IFG & 2));  //wait for transmit buffer emty
     EUSCI_B0 -> TXBUF = 0x00;       //write command
     while (!(EUSCI_B0 ->IFG & 2));  //wait for transmit buffer emty

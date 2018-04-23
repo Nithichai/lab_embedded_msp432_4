@@ -33,8 +33,10 @@ int main (void) {
     NVIC_EnableIRQ(EUSCIB0_IRQn);   // enable interrupt in NVIC
     __enable_irq();
     while (1) {
-        printf("CH 0 ADC VALUE : %d\n", get_adc_val(0));
-        printf("CH 1 ADC VALUE : %d\n", get_adc_val(1));
+        printf("CH 0 ADC VALUE : %d\n", ch0);
+        printf("CH 0 VOLTAGE VALUE : %f\n", ch0 * 3300.0 / 4096 / 1000);
+        printf("CH 1 ADC VALUE : %d\n", ch1);
+        printf("CH 1 VOLTAGE VALUE : %f\n", ch1 * 3300.0 / 4096 / 1000);
         delay_ms (1000);
         P2->OUT ^= 2;                   //toggle green LED
     }

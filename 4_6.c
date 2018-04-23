@@ -17,7 +17,7 @@ int main (void) {
     EUSCI_B0 -> CTLW0 = 0x2BC1;     //clock phase/polarity : 00, MSB first, 8bit, master, 4 pin SPI
 
     //sychronous mode,use SMCLK as clocksource
-    EUSCI_B0 -> BRW = 30000;        //3MHz/ 300 = 10 kHz
+    EUSCI_B0 -> BRW = 300;          //3MHz/ 300 = 10 kHz
     EUSCI_B0 -> CTLW0 &= ~0x0001;   //enable UCB0 after config
     P1 -> SEL0 |= 0xE0;             // P1.5 is CLK, P1.6 is SIMO, P1.7 is SOMI
     P1 -> SEL1 &= ~0xE0;
@@ -32,8 +32,7 @@ int main (void) {
     NVIC_EnableIRQ(EUSCIB0_IRQn);   // enable interrupt in NVIC
     __enable_irq();
     while (1) {
-        printf("%d\n", get_adc_val(0));
-        printf("%d\n", get_adc_val(1));
+        printf("%d %d\n", get_adc_val(0), get_adc_val(1));
         P2->OUT ^= 2;               //toggle green LED
     }
 }
@@ -88,10 +87,11 @@ unsigned char UART0Rx(void) {
     char c;
     while (!(EUSCI_A0 -> IFG & 0x01));
     c = EUSCI_A0 -> RXBUF;
-    return c;}
-    /////////////////////////////UART0Tx///////////////////////////////////
-    /* write a charater to UART */
-    int UART0Tx (unsigned char c){
+    return c;
+}
+/////////////////////////////UART0Tx///////////////////////////////////
+/* write a charater to UART */
+int UART0Tx (unsigned char c){
     while (!(EUSCI_A0 -> IFG & 0x02));
     EUSCI_A0 -> TXBUF = c;
     return c;
